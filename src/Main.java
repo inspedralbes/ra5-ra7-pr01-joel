@@ -21,9 +21,15 @@ public class Main {
     }
     public static Horario obtenerHorario (String fecha, String hora){
         String horari = fecha + " " + hora;
-        Horario ho = new Horario(horari);
+        Horario ho = null;
+        try {
+            ho = new Horario(horari);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
         return ho;
     }
+
 
 
     public static void mostrarInfolugar (){
@@ -94,8 +100,18 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         mostrarIntroduccion();
         //SELECCIONAR EL HORARIO DE LA PISTA
-        Horario ho = obtenerHorario(scanner.next(), scanner.next());
+        // SELECCIONAR EL HORARIO DE LA PISTA
+
+        Horario ho = null;
+        do {
+             ho = obtenerHorario(scanner.next(), scanner.next());
+        }while(ho ==null);
+
         int precio = 10;
+
+
+
+
         //SELECCIONAR EL LUGAR DE LA PISTA
         mostrarInfolugar();
         int sitio = scanner.nextInt();
