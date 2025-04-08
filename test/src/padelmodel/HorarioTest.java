@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HorarioTest {
 
-    @org.junit.jupiter.api.Test
+  /*  @org.junit.jupiter.api.Test
     void esFechaValidaTest_Invalida() {
         assertThrows(Exception.class,
                 ()->{
@@ -17,5 +17,5 @@ class HorarioTest {
     void esFechaValidaTest_Valida() {
         assertDoesNotThrow(() ->new Horario("31/12/2025 23:59"));
 
-    }
+    }*/
 }

@@ -1,20 +1,20 @@
 package src.padelmodel;
 
+import java.io.Serializable;
 
-public class Horario {
-    private String fecha;
+public class Horario implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private String inicio;
+    private String fin;
 
-
-    public Horario(String horario) throws Exception {
-        if(!esFechaValida(horario) ){
-            throw new Exception("Horario incorrecto!!");
-        }
-        fecha = horario;
+    public Horario(String inicio, String fin) {
+        this.inicio = inicio;
+        this.fin = fin;
     }
 
-
-    public String getHorario() {
-        return fecha;
+    @Override
+    public String toString() {
+        return inicio + " - " + fin;
     }
 
     public boolean esFechaValida(String fecha) {

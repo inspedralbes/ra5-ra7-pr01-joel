@@ -1,19 +1,21 @@
 package src.padelmodel;
 
+import java.io.Serializable;
 
-import java.util.ArrayList;
-
-
-public class Participante {
+public class Participante implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String nombre;
 
+    public Participante(String nombre) {
+        this.nombre = nombre;
+    }
 
     public String getNombre() {
         return nombre;
     }
 
-
-    public Participante(String nombre) {
-        this.nombre = nombre;
+    @Override
+    public String toString() {
+        return nombre;
     }
 }
