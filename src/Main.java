@@ -1,6 +1,8 @@
 package src;
 
 import src.padelmodel.*;
+import src.padelcontroller.*;
+import src.padelutils.*;
 
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -30,121 +32,113 @@ public class Main {
         return ho;
     }
 
+    public static Ubicacion obtenerUbicacion(Scanner scanner) {
+        System.out.println("Selecciona el lugar:");
+        System.out.println("1. Club Natció Montjuic (+2€)");
+        System.out.println("2. Go Go Padel (+2€)");
+        System.out.println("3. Padel Top");
+        System.out.println("4. Forus Picornell");
+        System.out.println("5. LET's PADEL");
+        System.out.println("6. Padel Delfos");
 
+        int opcion;
+        do {
+            System.out.print("Opción: ");
+            opcion = scanner.nextInt();
+            scanner.nextLine(); // limpia buffer
+        } while (opcion < 1 || opcion > 6);
 
-    public static void mostrarInfolugar (){
-        System.out.println("Ahora vamos a seleccionar el lugar donde queremos jugar. Porfavor seleccione uno" +
-                " de los clubs que hay en la lista:");
-        System.out.println("1. Club Natció Montjuic (Suplemento de 2€)\n2.Go Go Padel (Suplemento de 2€)\n3.Padel Top\n4.Forus Picornell\n5.LET's PADEL" +
-                "\n6.Padel Delfos");
-
-
-
-
-    }
-
-
-    public static Ubicacion obtenerUbicacion(int pista){
-        ArrayList<String> lugara = new ArrayList<String>();
-        lugara.add("Club Natció Montjuic");
-        lugara.add("Go Go Padel");
-        lugara.add("Padel Top");
-        lugara.add("Forus Picornell");
-        lugara.add("LET's PADEL");
-        lugara.add("Padel Delfos");
-        Ubicacion ub = new Ubicacion(lugara.get(pista -1));
-        return ub;
-    }
-
-
-    public static void mostrarError (){
-        System.out.println("Porfavor seleccione una de las opciones correctamente. Gracias.");
-    }
-
-
-    public static void mostrarInfotipo (){
-        System.out.println("Selecciona el tipo de pista en la que quieres jugar:");
-        System.out.println("1. INDOOR DE CEMENTO (SUPLEMENTO DE 3€)\n2. INDOOR DE CRISTAL (SUPLEMENTO DE 3€)\n3. EXTERIOR DE CEMENTO\n4. EXTERIOR DE CRISTAL");
-    }
-
-
-    public static Tipo_pista_padel obtenerTipo (int pista){
-        ArrayList<String> tipo = new ArrayList<String>();
-        tipo.add("INDOOR DE CEMENTO");
-        tipo.add("INDOOR DE CRISTAL");
-        tipo.add("EXTERIOR DE CEMENTO");
-        tipo.add("EXTERIOR DE CRISTAL");
-        Tipo_pista_padel tp = new Tipo_pista_padel(tipo.get(pista -1));
-        return tp;
-    }
-
-
-    public static void mostrarInfoparticipantes(){
-        System.out.println("Para acabar, necesito saber los nombres de los participantes:");
-    }
-
-
-    public static ArrayList<Participante> obtenerParticipantes() {
-        Scanner scanner = new Scanner(System.in);
-        ArrayList<Participante> participantes = new ArrayList<>();
-        for (int i = 1; i <= 4; i++) {
-            System.out.println("Añade el nombre y apellido del participante num " + i);
-            String persona = scanner.nextLine();
-            participantes.add(new Participante(persona));
+        String lugar = "";
+        switch (opcion) {
+            case 1:
+                lugar = "Club Natció Montjuic";
+                break;
+            case 2:
+                lugar = "Go Go Padel";
+                break;
+            case 3:
+                lugar = "Padel Top";
+                break;
+            case 4:
+                lugar = "Forus Picornell";
+                break;
+            case 5:
+                lugar = "LET's PADEL";
+                break;
+            case 6:
+                lugar = "Padel Delfos";
+                break;
         }
-        return participantes;
+        return new Ubicacion(lugar);
+    }
+
+
+    public static Tipo_pista_padel obtenerTipoPista(Scanner scanner) {
+        System.out.println("Selecciona el tipo de pista:");
+        System.out.println("1. INDOOR");
+        System.out.println("2. OUTDOOR");
+
+        int opcion;
+        do {
+            System.out.print("Opción: ");
+            opcion = scanner.nextInt();
+            scanner.nextLine();
+        } while (opcion != 1 && opcion != 2);
+
+        return (opcion == 1) ? Tipo_pista_padel.INDOOR : Tipo_pista_padel.OUTDOOR;
+    }
+
+    public static ArrayList<Participante> obtenerParticipantes(Scanner scanner) {
+        ArrayList<Participante> lista = new ArrayList<>();
+        for (int i = 1; i <= 4; i++) {
+            System.out.print("Nombre del participante " + i + ": ");
+            String nombre = scanner.nextLine();
+            lista.add(new Participante(nombre));
+        }
+        return lista;
     }
 
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        mostrarIntroduccion();
-        //SELECCIONAR EL HORARIO DE LA PISTA
-        // SELECCIONAR EL HORARIO DE LA PISTA
+        ReservaController controller = new ReservaController();
 
-        Horario ho = null;
+        int opcion;
         do {
-             ho = obtenerHorario(scanner.next(), scanner.next());
-        }while(ho ==null);
+            System.out.println("\n=== MENÚ RESERVAS DE PÁDEL ===");
+            System.out.println("1. Crear nueva reserva");
+            System.out.println("2. Mostrar reservas");
+            System.out.println("3. Modificar reserva");
+            System.out.println("4. Eliminar reserva");
+            System.out.println("5. Guardar en archivo");
+            System.out.println("6. Cargar desde archivo");
+            System.out.println("0. Salir");
+            System.out.print("Selecciona una opción: ");
+            opcion = scanner.nextInt();
+            scanner.nextLine();
 
-        int precio = 10;
+            switch (opcion) {
+                case 1 -> {
+                    Horario horario = obtenerHorario(scanner);
+                    Ubicacion ubicacion = obtenerUbicacion(scanner);
+                    Tipo_pista_padel tipo = obtenerTipoPista(scanner);
+                    ArrayList<Participante> participantes = obtenerParticipantes(scanner);
+                    Reserva nuevaReserva = new Reserva(horario, tipo, participantes, ubicacion);
+                    controller.agregarReserva(nuevaReserva);
+                    System.out.println("\n✅ Reserva creada correctamente.");
+                    System.out.println(nuevaReserva);
+                }
+                case 2 -> controller.mostrarReservas();
+                case 3 -> controller.modificarReserva(scanner);
+                case 4 -> controller.eliminarReserva(scanner);
+                case 5 -> controller.guardarEnArchivo();
+                case 6 -> controller.cargarDesdeArchivo();
+                case 0 -> System.out.println("👋 Saliendo del programa.");
+                default -> System.out.println("❌ Opción no válida.");
+            }
+        } while (opcion != 0);
 
-
-
-
-        //SELECCIONAR EL LUGAR DE LA PISTA
-        mostrarInfolugar();
-        int sitio = scanner.nextInt();
-        while (sitio < 1 || sitio > 6){
-            mostrarError();
-            sitio = scanner.nextInt();
-        }
-        if (sitio == 1 || sitio == 2){
-            precio = precio +2;
-        }
-        Ubicacion ub = obtenerUbicacion(sitio);
-        //SELECCIONAR EL TIPO DE PISTA
-        mostrarInfotipo();
-        int tipo = scanner.nextInt();
-
-
-        while (tipo < 1 || tipo > 4){
-            mostrarError();
-            tipo = scanner.nextInt();
-        }
-        if (tipo == 1 || tipo == 2){
-            precio = precio +3;
-        }
-        Tipo_pista_padel tp = obtenerTipo(tipo);
-
-
-        //SELECCIONAR LOS PARTICIPANTES
-        mostrarInfoparticipantes();
-        ArrayList<Participante> lista = obtenerParticipantes();
-        Reserva reserva = new Reserva(ho,tp,lista,ub);
-
-
-        System.out.println("CONFIRMACION DE LA RESERVA:\n \nDia y la hora de la reserva: " + ho.getHorario() +"\nLugar de la reserva: "+ ub.getUbicacion());
-        System.out.println("Tipo de pista: " + tp.getTipo_pista_padel() + "\nLista de participantes: " + lista + "\nEl precio total es: " + precio +"€");
+        scanner.close();
     }
 }
+

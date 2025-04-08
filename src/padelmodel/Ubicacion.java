@@ -1,18 +1,18 @@
 package src.padelmodel;
 
+import java.io.Serializable;
 
-public class Ubicacion {
-    private String nombre;
+public class Ubicacion implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private String direccion;
 
-
-    public Ubicacion(String ubicacion) {
-        nombre = ubicacion;
+    public Ubicacion(String direccion) {
+        this.direccion = direccion;
     }
 
-
-    public String getUbicacion() {
-        return nombre;
+    @Override
+    public String toString() {
+        return direccion;
     }
-
-
 }
+
