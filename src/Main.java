@@ -2,7 +2,7 @@ package src;
 
 import src.padelmodel.*;
 import src.padelcontroller.*;
-import src.padelutils.*;
+import src.dao.*;
 
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -17,15 +17,16 @@ public class Main {
                 "jugar a padel. Recordar que el precio de la pista es de 10€ y depende del lugar o del tipo de pista\nel precio puede variar. Lo primero que tenemos que hacer es seleccionar la fecha y la hora a " +
                 "la que queremos jugar.");
         System.out.println();
-        System.out.println("Escribe la fecha en numeros (XX/XX/XXXX) y la hora (XX:XX):");
+
 
 
     }
-    public static Horario obtenerHorario (String fecha, String hora){
-        String horari = fecha + " " + hora;
+    public static Horario obtenerHorario (Scanner scanner){
         Horario ho = null;
         try {
-            ho = new Horario(horari);
+            System.out.println("Escribe la fecha en numeros (XX/XX/XXXX) y la hora (XX:XX):");
+            String[] datosF = scanner.nextLine().split(" ");
+            ho = new Horario(datosF[0], datosF[1]);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -118,23 +119,26 @@ public class Main {
             scanner.nextLine();
 
             switch (opcion) {
-                case 1 -> {
+                case 1:
                     Horario horario = obtenerHorario(scanner);
                     Ubicacion ubicacion = obtenerUbicacion(scanner);
                     Tipo_pista_padel tipo = obtenerTipoPista(scanner);
                     ArrayList<Participante> participantes = obtenerParticipantes(scanner);
                     Reserva nuevaReserva = new Reserva(horario, tipo, participantes, ubicacion);
-                    controller.agregarReserva(nuevaReserva);
-                    System.out.println("\n✅ Reserva creada correctamente.");
+                    Padel_Dao dao = new Padel_Dao_CSV();
+                    //FALTA RELLENAR EK DAO_CSV ESTA EL ESQUELETO CREADO
+                    dao.guardarReserva(nuevaReserva);
+                    System.out.println("\nReserva creada correctamente.");
                     System.out.println(nuevaReserva);
-                }
-                case 2 -> controller.mostrarReservas();
-                case 3 -> controller.modificarReserva(scanner);
-                case 4 -> controller.eliminarReserva(scanner);
-                case 5 -> controller.guardarEnArchivo();
-                case 6 -> controller.cargarDesdeArchivo();
-                case 0 -> System.out.println("👋 Saliendo del programa.");
-                default -> System.out.println("❌ Opción no válida.");
+                    break;
+
+                case 2: controller.mostrarReservas();break;
+                case 3: controller.modificarReserva(scanner);break;
+                case 4: controller.eliminarReserva(scanner);break;
+                case 5: controller.guardarEnArchivo();break;
+                case 6: controller.cargarDesdeArchivo();break;
+                case 0: System.out.println("Saliendo del programa.");break;
+                default: System.out.println("Opción no válida.");break;
             }
         } while (opcion != 0);
 
