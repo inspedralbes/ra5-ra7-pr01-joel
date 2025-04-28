@@ -120,6 +120,8 @@ public class Main {
             opcion = scanner.nextInt();
             scanner.nextLine();
 
+            // ESTA LINIA NOS PERMITE CAMBIAR SI QUEREMOS GUARDARLO EN CSV O EN MYSQL
+            Padel_Dao dao = new Padel_Dao_MySQL();
             switch (opcion) {
                 case 1:
                     Horario horario = obtenerHorario(scanner);
@@ -127,16 +129,15 @@ public class Main {
                     Tipo_pista_padel tipo = obtenerTipoPista(scanner);
                     ArrayList<Participante> participantes = obtenerParticipantes(scanner);
                     Reserva nuevaReserva = new Reserva(horario, tipo, participantes, ubicacion);
-                    Padel_Dao dao = new Padel_Dao_CSV();
                     //FALTA RELLENAR EK DAO_CSV ESTA EL ESQUELETO CREADO
                     dao.guardarReserva(nuevaReserva);
                     System.out.println("\nReserva creada correctamente.");
                     System.out.println(nuevaReserva);
                     break;
 
-                case 2: controller.mostrarReservas();break;
-                case 3: controller.modificarReserva(scanner);break;
-                case 4: controller.eliminarReserva(scanner);break;
+                case 2: controller.mostrarReservas(dao);break;
+                case 3: controller.modificarReserva(dao, scanner);break;
+                case 4: controller.eliminarReserva(dao, scanner);break;
                 case 5: controller.guardarEnArchivo();break;
                 case 6: controller.cargarDesdeArchivo();break;
                 case 0: System.out.println("Saliendo del programa.");break;

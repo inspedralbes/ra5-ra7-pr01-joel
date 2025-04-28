@@ -1,4 +1,22 @@
 package src.dao;
 
-public class Padel_Dao_MySQL {
+import src.padelmodel.Reserva;
+
+import java.util.List;
+
+public class Padel_Dao_MySQL implements Padel_Dao {
+    @Override
+    public void guardarReserva(Reserva padel) {
+
+    }
+
+    @Override
+    public List<Reserva> llegirPadel() {
+        return List.of();
+    }
+
+    @Override
+    public Reserva servirPadel() {
+        return null;
+    }
 }

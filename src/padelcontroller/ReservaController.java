@@ -1,5 +1,7 @@
 package src.padelcontroller;
 
+import src.dao.Padel_Dao;
+import src.dao.Padel_Dao_CSV;
 import src.padelmodel.*;
 import src.padelutils.ArchivoUtils;
 
@@ -36,7 +38,8 @@ public class ReservaController {
         System.out.println("Reserva creada correctamente.");
     }
 
-    public void mostrarReservas() {
+    public void mostrarReservas(Padel_Dao dao ) {
+        reservas = dao.llegirPadel();
         if (reservas.isEmpty()) {
             System.out.println("No hay reservas registradas.");
         } else {
@@ -49,8 +52,8 @@ public class ReservaController {
         }
     }
 
-    public void modificarReserva(Scanner sc) {
-        mostrarReservas();
+    public void modificarReserva(Padel_Dao dao, Scanner sc) {
+        mostrarReservas(dao);
         if (reservas.isEmpty()) return;
 
         System.out.print("Número de reserva a modificar: ");
@@ -67,8 +70,8 @@ public class ReservaController {
         }
     }
 
-    public void eliminarReserva(Scanner sc) {
-        mostrarReservas();
+    public void eliminarReserva(Padel_Dao dao, Scanner sc) {
+        mostrarReservas(dao);
         if (reservas.isEmpty()) return;
 
         System.out.print("Número de reserva a eliminar: ");
