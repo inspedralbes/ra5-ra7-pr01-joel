@@ -7,20 +7,20 @@ import src.dao.*;
 import java.util.Scanner;
 import java.util.ArrayList;
 
-
 public class Main {
 
+    // Variable para almacenar el tipo de almacenamiento seleccionado
+    private static Padel_Dao_Factory.TipoAlmacenamiento tipoAlmacenamiento =
+            Padel_Dao_Factory.TipoAlmacenamiento.MYSQL; // Por defecto
 
-    public static void mostrarIntroduccion (){
+    public static void mostrarIntroduccion() {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Buenos/as dias/tarde/noche, bienvenido a la aplicación de reservas para" +
                 "jugar a padel. Recordar que el precio de la pista es de 10€ y depende del lugar o del tipo de pista\nel precio puede variar. Lo primero que tenemos que hacer es seleccionar la fecha y la hora a " +
                 "la que queremos jugar.");
         System.out.println();
-
-
-
     }
+
     public static Horario obtenerHorario(Scanner scanner) {
         Horario ho = null;
         while (ho == null) {
@@ -90,7 +90,6 @@ public class Main {
         return new Ubicacion(lugar);
     }
 
-
     public static Tipo_pista_padel obtenerTipoPista(Scanner scanner) {
         System.out.println("Selecciona el tipo de pista:");
         System.out.println("1. INDOOR");
@@ -116,6 +115,29 @@ public class Main {
         return lista;
     }
 
+    /**
+     * Método para seleccionar el tipo de almacenamiento
+     */
+    public static Padel_Dao_Factory.TipoAlmacenamiento seleccionarTipoAlmacenamiento(Scanner scanner) {
+        System.out.println("\n=== SELECCIÓN DE ALMACENAMIENTO ===");
+        System.out.println("1. Base de Datos MySQL");
+        System.out.println("2. Archivo CSV");
+        System.out.print("Selecciona una opción: ");
+
+        int opcion;
+        do {
+            opcion = scanner.nextInt();
+            scanner.nextLine(); // Limpiar buffer
+
+            if (opcion != 1 && opcion != 2) {
+                System.out.print("Opción no válida. Intente de nuevo: ");
+            }
+        } while (opcion != 1 && opcion != 2);
+
+        return (opcion == 1) ?
+                Padel_Dao_Factory.TipoAlmacenamiento.MYSQL :
+                Padel_Dao_Factory.TipoAlmacenamiento.CSV;
+    }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -130,13 +152,15 @@ public class Main {
             System.out.println("4. Eliminar reserva");
             System.out.println("5. Guardar en archivo");
             System.out.println("6. Cargar desde archivo");
+            System.out.println("7. Cambiar tipo de almacenamiento");
             System.out.println("0. Salir");
             System.out.print("Selecciona una opción: ");
             opcion = scanner.nextInt();
             scanner.nextLine();
 
-            // ESTA LINIA NOS PERMITE CAMBIAR SI QUEREMOS GUARDARLO EN CSV O EN MYSQL
-            Padel_Dao dao = new Padel_Dao_MySQL();
+            // Usar la Factory para obtener el DAO según el tipo seleccionado
+            Padel_Dao dao = Padel_Dao_Factory.crearPadelDao(tipoAlmacenamiento);
+
             switch (opcion) {
                 case 1:
                     Horario horario = obtenerHorario(scanner);
@@ -144,7 +168,6 @@ public class Main {
                     Tipo_pista_padel tipo = obtenerTipoPista(scanner);
                     ArrayList<Participante> participantes = obtenerParticipantes(scanner);
                     Reserva nuevaReserva = new Reserva(horario, tipo, participantes, ubicacion);
-                    //FALTA RELLENAR EK DAO_CSV ESTA EL ESQUELETO CREADO
                     dao.guardarReserva(nuevaReserva);
                     System.out.println("\nReserva creada correctamente.");
                     System.out.println(nuevaReserva);
@@ -155,6 +178,10 @@ public class Main {
                 case 4: controller.eliminarReserva(dao, scanner);break;
                 case 5: controller.guardarEnArchivo();break;
                 case 6: controller.cargarDesdeArchivo();break;
+                case 7:
+                    tipoAlmacenamiento = seleccionarTipoAlmacenamiento(scanner);
+                    System.out.println("Tipo de almacenamiento cambiado a: " + tipoAlmacenamiento);
+                    break;
                 case 0: System.out.println("Saliendo del programa.");break;
                 default: System.out.println("Opción no válida.");break;
             }
@@ -163,4 +190,3 @@ public class Main {
         scanner.close();
     }
 }
-
