@@ -1,5 +1,7 @@
 package src.dao;
 
+import src.database.ConexionDB;
+import src.database.DataConnection;
 import src.padelmodel.*;
 
 import java.sql.*;
@@ -9,14 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Padel_Dao_MySQL implements Padel_Dao {
-    // Configuración de la conexión a la base de datos
-    private static final String URL = "jdbc:mysql://localhost:3306/padel_reservas";
-    private static final String USER = "root";
-    private static final String PASSWORD = "root"; // Cambia esto según tu configuración
+    // Use the connection parameters from DataConnection class
+    private ConexionDB conDB;
 
-    // Obtiene una conexión a la base de datos
-    private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+    public Padel_Dao_MySQL() {
+        this.conDB = ConexionDB.getInstance(); // Inicializar el objeto conDB
     }
 
     @Override
@@ -25,22 +24,36 @@ public class Padel_Dao_MySQL implements Padel_Dao {
         String sqlParticipante = "INSERT INTO participantes (nombre) VALUES (?)";
         String sqlRelacion = "INSERT INTO reserva_participante (reserva_id, participante_id) VALUES (?, ?)";
 
-        try (Connection conn = getConnection()) {
+        try (Connection conn = conDB.getConnection()) {
             conn.setAutoCommit(false); // Iniciamos una transacción
 
             try {
                 // Procesamos el horario para obtener fecha y horas
-                String[] horarioParts = reserva.getHorario().toString().split(" - ");
-                String fechaHora = horarioParts[0];
+                String horarioString = reserva.getHorario().toString();
+                String[] horarioParts = horarioString.split(" - ");
 
-                SimpleDateFormat parser = new SimpleDateFormat("dd/MM/yyyy - HH:mm");
-                java.util.Date dateObj = parser.parse(fechaHora);
+                // El formato que viene del Horario podría ser: "dd/MM/yyyy HH:mm - HH:mm"
+                String fechaHoraInicio = horarioParts[0];
 
-                java.sql.Date fechaSql = new java.sql.Date(dateObj.getTime());
-                java.sql.Time horaSql = new java.sql.Time(dateObj.getTime());
+                // Separamos la fecha y la hora
+                String[] fechaHoraParts = fechaHoraInicio.split(" ");
+                String fechaStr = fechaHoraParts[0];  // dd/MM/yyyy
+                String horaInicioStr = fechaHoraParts[1];  // HH:mm
+                String horaFinStr = horarioParts[1];  // HH:mm
 
-                // Calculamos hora fin (asumimos 1 hora de duración por defecto)
-                java.sql.Time horaFinSql = new java.sql.Time(dateObj.getTime() + 3600000); // +1 hora en milisegundos
+                // Parseamos la fecha
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                java.util.Date fecha = dateFormat.parse(fechaStr);
+                java.sql.Date fechaSql = new java.sql.Date(fecha.getTime());
+
+                // Parseamos la hora de inicio
+                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+                java.util.Date horaInicio = timeFormat.parse(horaInicioStr);
+                java.sql.Time horaInicioSql = new java.sql.Time(horaInicio.getTime());
+
+                // Parseamos la hora de fin
+                java.util.Date horaFin = timeFormat.parse(horaFinStr);
+                java.sql.Time horaFinSql = new java.sql.Time(horaFin.getTime());
 
                 // Obtenemos ID de la ubicación
                 int ubicacionId = getUbicacionId(conn, reserva.getUbicacion().toString());
@@ -51,7 +64,7 @@ public class Padel_Dao_MySQL implements Padel_Dao {
                 // Insertamos la reserva
                 PreparedStatement stmtReserva = conn.prepareStatement(sqlReserva, Statement.RETURN_GENERATED_KEYS);
                 stmtReserva.setDate(1, fechaSql);
-                stmtReserva.setTime(2, horaSql);
+                stmtReserva.setTime(2, horaInicioSql);
                 stmtReserva.setTime(3, horaFinSql);
                 stmtReserva.setInt(4, ubicacionId);
                 stmtReserva.setInt(5, tipoPistaId);
@@ -109,7 +122,23 @@ public class Padel_Dao_MySQL implements Padel_Dao {
         if (rs.next()) {
             return rs.getInt("id");
         } else {
-            throw new SQLException("No se encontró la ubicación: " + nombreUbicacion);
+            // Si no existe, creamos la ubicación
+            return insertarUbicacion(conn, nombreUbicacion);
+        }
+    }
+
+    // Inserta una nueva ubicación y devuelve su ID
+    private int insertarUbicacion(Connection conn, String nombreUbicacion) throws SQLException {
+        String sql = "INSERT INTO ubicaciones (nombre) VALUES (?)";
+        PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        stmt.setString(1, nombreUbicacion);
+        stmt.executeUpdate();
+
+        ResultSet generatedKeys = stmt.getGeneratedKeys();
+        if (generatedKeys.next()) {
+            return generatedKeys.getInt(1);
+        } else {
+            throw new SQLException("No se pudo crear la ubicación: " + nombreUbicacion);
         }
     }
 
@@ -123,7 +152,23 @@ public class Padel_Dao_MySQL implements Padel_Dao {
         if (rs.next()) {
             return rs.getInt("id");
         } else {
-            throw new SQLException("No se encontró el tipo de pista: " + tipoPista);
+            // Si no existe, creamos el tipo de pista
+            return insertarTipoPista(conn, tipoPista);
+        }
+    }
+
+    // Inserta un nuevo tipo de pista y devuelve su ID
+    private int insertarTipoPista(Connection conn, String tipoPista) throws SQLException {
+        String sql = "INSERT INTO tipos_pista (nombre) VALUES (?)";
+        PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        stmt.setString(1, tipoPista);
+        stmt.executeUpdate();
+
+        ResultSet generatedKeys = stmt.getGeneratedKeys();
+        if (generatedKeys.next()) {
+            return generatedKeys.getInt(1);
+        } else {
+            throw new SQLException("No se pudo crear el tipo de pista: " + tipoPista);
         }
     }
 
@@ -136,7 +181,7 @@ public class Padel_Dao_MySQL implements Padel_Dao {
                 "JOIN ubicaciones u ON r.ubicacion_id = u.id " +
                 "ORDER BY r.fecha, r.hora_inicio";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = conDB.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -157,7 +202,7 @@ public class Padel_Dao_MySQL implements Padel_Dao {
                 String horaFinStr = formatoHora.format(horaFin);
 
                 // Creamos objeto Horario
-                Horario horario = new Horario(fechaStr + " - " + horaInicioStr, horaFinStr);
+                Horario horario = new Horario(fechaStr + " " + horaInicioStr, horaFinStr);
 
                 // Creamos objeto Ubicacion
                 Ubicacion ubicacionObj = new Ubicacion(ubicacion);
@@ -225,16 +270,12 @@ public class Padel_Dao_MySQL implements Padel_Dao {
                 "AND DATE_FORMAT(r.hora_inicio, '%H:%i') = ? " +
                 "AND u.nombre = ?";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = conDB.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             // Extraemos la información de la reserva
             String[] horarioParts = reserva.getHorario().toString().split(" - ");
-            String[] fechaHoraParts = horarioParts[0].split(" - ");
-
-            if (fechaHoraParts.length < 2) {
-                fechaHoraParts = horarioParts[0].split(" ");
-            }
+            String[] fechaHoraParts = horarioParts[0].split(" ");
 
             String fecha = fechaHoraParts[0];
             String hora = fechaHoraParts.length > 1 ? fechaHoraParts[1] : "00:00";

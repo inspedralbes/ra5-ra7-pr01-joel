@@ -21,15 +21,30 @@ public class Main {
 
 
     }
-    public static Horario obtenerHorario (Scanner scanner){
+    public static Horario obtenerHorario(Scanner scanner) {
         Horario ho = null;
         while (ho == null) {
             try {
-                System.out.println("Escribe la fecha en numeros (XX/XX/XXXX) y la hora (XX:XX):");
-                String[] datosF = scanner.nextLine().split(" ");
-                ho = new Horario(datosF[0], datosF[1]);
+                System.out.println("Escribe la fecha en números (DD/MM/AAAA):");
+                String fecha = scanner.nextLine().trim();
+
+                System.out.println("Escribe la hora de inicio (HH:MM):");
+                String horaInicio = scanner.nextLine().trim();
+
+                System.out.println("Escribe la hora de fin (HH:MM):");
+                String horaFin = scanner.nextLine().trim();
+
+                // Crear el objeto Horario con los tres componentes separados
+                ho = new Horario(fecha, horaInicio, horaFin);
+
+                // Validación simple
+                if (!ho.esFechaValida(fecha + " " + horaInicio)) {
+                    throw new Exception("Formato de fecha u hora incorrecto");
+                }
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                System.out.println("Error: " + e.getMessage());
+                System.out.println("Por favor, intenta de nuevo.");
+                ho = null;
             }
         }
         return ho;
