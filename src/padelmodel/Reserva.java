@@ -26,6 +26,10 @@ public class Reserva implements Serializable {
         return pista;
     }
 
+    /**
+     * Obtiene todos los participantes de la reserva
+     * @return Lista de parcitipantes
+     */
     public ArrayList<Participante> getParticipantes() {
         return participantes;
     }
